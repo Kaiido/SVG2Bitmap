@@ -181,13 +181,22 @@ function SVG2Bitmap(svg, receiver, params) {
             }
 
             if (tester.isTainted(canvas)) {
-                console.warn("Your browser has tainted the canvas.\n The canvas is returned");
+                console.warn("Your browser has tainted the canvas.");
                 if (receiver.nodeName === 'IMG') {
                     receiver.parentNode.replaceChild(canvas, receiver);
-                } else if (typeof receiver === 'function') {
-                    receiver(canvas, null);
-                }
-                return;
+                } else {
+					// make the canvas looks like the svg
+					canvas.setAttribute('style', getSVGStyles(canvas));
+					// a container element
+					if (receiver !== canvas && receiver.appendChild) {
+						receiver.appendChild(canvas);
+					}
+					// if we did set a function
+					else if (typeof receiver === 'function') {
+						receiver(canvas, null);
+					}
+				}
+				return;
             }
 
             if (receiver.nodeName === 'IMG') {
