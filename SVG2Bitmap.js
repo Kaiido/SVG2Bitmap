@@ -55,11 +55,19 @@ function SVG2Bitmap(svg, receiver, params) {
     // the element passed is not an svg element
     if (svg.nodeName !== 'svg') {
         // get the first one in its content
-        svg = svg.querySelector('svg');
-
-        if (!svg) {
+        var target = svg.querySelector('svg');
+        if (!target) {
+        	var qS = '[src*=".svg"]';
+        	var obj = svg.querySelector('iframe'+qS+',embedded'+qS) || svg.querySelector('object[data*=".svg"]');
+        	if(obj){
+        		console.log(obj);
+        		SVG2Bitmap(obj, receiver, params);
+        		return;
+        		}
             console.error('unable to access the svg node, make sure it has been appended to the document');
             return;
+        }else{
+        	svg = target;
         }
     }
 
