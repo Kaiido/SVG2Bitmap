@@ -58,7 +58,7 @@ function SVG2Bitmap(svg, receiver, params) {
         var target = svg.querySelector('svg');
         if (!target) {
         	var qS = '[src*=".svg"]';
-        	var obj = svg.querySelector('iframe'+qS+',embedded'+qS) || svg.querySelector('object[data*=".svg"]');
+        	var obj = svg.querySelector('iframe'+qS+', embed'+qS) || svg.querySelector('object[data*=".svg"]');
         	if(obj){
         		console.log(obj);
         		SVG2Bitmap(obj, receiver, params);
@@ -672,12 +672,13 @@ function SVG2Bitmap(svg, receiver, params) {
         var docsToFetch = 0;
         // our actual doc
         var current_doc = {
-            href: location.href,
+            href: location.href.replace(location.hash, '').replace(/#/g, ''),
             pathname: location.pathname,
             filename: '',
             innerElements: [],
             parsedElements: [],
             doc: svg.ownerDocument,
+            base : location.href.replace(location.hash, '').replace(/#/g, '')
         };
         // an array for our external documents		
         var documents = [current_doc];
@@ -796,8 +797,6 @@ function SVG2Bitmap(svg, receiver, params) {
 
             return externals;
         };
-
-        documents[0].base = location.href;
 
         var changeImagesHref = function(elem, base) {
             var images = elem.querySelectorAll('image');
