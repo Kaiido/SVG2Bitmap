@@ -60,7 +60,6 @@ function SVG2Bitmap(svg, receiver, params) {
         	var qS = '[src*=".svg"]';
         	var obj = svg.querySelector('iframe'+qS+', embed'+qS) || svg.querySelector('object[data*=".svg"]');
         	if(obj){
-        		console.log(obj);
         		SVG2Bitmap(obj, receiver, params);
         		return;
         		}
@@ -210,7 +209,7 @@ function SVG2Bitmap(svg, receiver, params) {
             if (receiver.nodeName === 'IMG') {
                 // make the img looks like the svg
                 receiver.setAttribute('style', getSVGStyles(receiver));
-                receiver.src = canvas.toDataURL();
+                receiver.src = canvas.toDataURL(params.type, params.quality);
             } else {
                 // make the canvas looks like the svg
                 canvas.setAttribute('style', getSVGStyles(canvas));
@@ -220,7 +219,7 @@ function SVG2Bitmap(svg, receiver, params) {
                 }
                 // if we did set a function
                 else if (typeof receiver === 'function') {
-                    receiver(canvas, canvas.toDataURL());
+                    receiver(canvas, canvas.toDataURL(params.type, params.quality));
                 }
             }
         };
@@ -294,8 +293,10 @@ function SVG2Bitmap(svg, receiver, params) {
                 // is it our svg node or one of its children ?
                 if ((svg.matches && svg.matches(selector)) || svg.querySelector(selector)) {
                     var cssText = rules[j].cssText;
-                    var matched = cssText.match(/url\((.*)\)/);
-                    if (matched && matched.length > 1) {
+                    
+					var reg = new RegExp(/url\((.*?)\)/g);
+	                var matched = [];
+					while ((matched = reg.exec(cssText)) !== null) {
                         var ext = matched[1].replace(/\"/g, '');
                         var href = styleSheets[i].href || location.href;
                         cssIRIs.push([ext, href]);
@@ -303,7 +304,7 @@ function SVG2Bitmap(svg, receiver, params) {
                         var iri = a.href.substring(a.href.lastIndexOf('/') + 1);
                         var newId = '#' + iri.replace(/\//g, '_').replace(/\./g, '_').replace('#', '_');
                         cssText = cssText.replace(ext, newId);
-                    }
+					}
                     // append it to our <style> node
                     style.innerHTML += cssText + '\n';
                 }
@@ -730,7 +731,6 @@ function SVG2Bitmap(svg, receiver, params) {
             var externals = [];
 
             var ext_attr = function(ele, type) {
-
                 var that = {};
                 that.element = ele;
                 that.type = type;
@@ -748,11 +748,12 @@ function SVG2Bitmap(svg, receiver, params) {
 
                     att = ele.attributes;
                     for (var j = 0; j < att.length; j++) {
-                        var matched = att[j].value.match(/url\((.*)\)/);
-                        if (matched && matched.length > 1) {
-                            that.attributes.push(att[j]);
-                            that.requestedElements.push(matched[1].replace(/"/g, ''));
-                        }
+	                    var reg = new RegExp(/url\((.*?)\)/g);
+	                    var matched = [];
+						while ((matched = reg.exec(att[j].value)) !== null) {
+							that.attributes.push(att[j]);
+							that.requestedElements.push(matched[1].replace(/"/g, ''));
+						}
                     }
                 }
                 return that;
@@ -769,6 +770,7 @@ function SVG2Bitmap(svg, receiver, params) {
                     new ext_attr(xl[i], 'xl')
                 );
             }
+  
             for (i = 0; i < url.length; i++) {
                 externals.push(
                     new ext_attr(url[i], 'url')
