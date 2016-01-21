@@ -740,7 +740,15 @@ function SVG2Bitmap(svg, receiver, params) {
                 var att;
                 if (type === 'xl') {
 
-                    att = ele.attributes['xlink:href'] || ele.attributes['href'];
+                    att = ele.attributes['xlink:href'];
+                    if(!att){
+                    	var href = ele.attributes['href'];
+                    	if(href.namespaceURI.indexOf('xlink')>-1){
+                    		att = href;
+                    	}else{
+                    		return that;
+                    	}
+                    }
                     that.attributes.push(att);
                     that.requestedElements.push(att.value);
 
