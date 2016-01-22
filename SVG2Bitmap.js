@@ -649,7 +649,7 @@ function SVG2Bitmap(svg, receiver, params) {
 
             var href = images[i].getAttributeNS(xlinkNS, 'href');
             // check if the image is external
-            if (href.indexOf('data:image') < 0) {
+            if (href && href.indexOf('data:image') < 0) {
                 // if it points to another svg element
                 if (href.indexOf('.svg') > 0) {
                     parseFromUrl(href, images[i]);
@@ -742,11 +742,12 @@ function SVG2Bitmap(svg, receiver, params) {
 
                     att = ele.attributes['xlink:href'];
                     if(!att){
-                    	var href = ele.attributes['href'];
-                    	if(href.namespaceURI.indexOf('xlink')>-1){
+                    	var href = ele.attributes.href;
+
+                    	if(href && href.namespaceURI && href.namespaceURI.indexOf('xlink')>-1){
                     		att = href;
                     	}else{
-                    		return that;
+                    		return false;
                     	}
                     }
                     that.attributes.push(att);
@@ -773,16 +774,25 @@ function SVG2Bitmap(svg, receiver, params) {
             var url = getURLs(el);
 
             var i;
+
+            var att;
+
             for (i = 0; i < xl.length; i++) {
-                externals.push(
-                    new ext_attr(xl[i], 'xl')
-                );
+            	att = ext_attr(xl[i], 'xl');
+            	if(!att){
+            		continue;
+            	}
+                externals.push(att);
+                att = null;
             }
   
             for (i = 0; i < url.length; i++) {
-                externals.push(
-                    new ext_attr(url[i], 'url')
-                );
+            	att = ext_attr(url[i], 'url');
+            	if(!att){
+            		continue;
+            	}
+                externals.push(att);
+                att = null;
             }
 
             var self_attrs = el.attributes;
