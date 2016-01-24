@@ -272,12 +272,11 @@ function SVG2Bitmap(svg, receiver, params) {
 
         // iterate through all document's stylesheets
         for (i = 0; i < styleSheets.length; i++) {
-            if (styleSheets[i].ownerNode.ownerSVGElement === svg) {
-                continue;
-            }
+        	var currentStyle = styleSheets[i]
+
             var rules;
             try {
-                rules = styleSheets[i].cssRules;
+                rules = currentStyle.cssRules;
             } catch (e) {
                 continue;
             }
@@ -292,16 +291,17 @@ function SVG2Bitmap(svg, receiver, params) {
                 var selector = rules[j].selectorText;
                 // is it our svg node or one of its children ?
                 if ((svg.matches && svg.matches(selector)) || svg.querySelector(selector)) {
+
                     var cssText = rules[j].cssText;
                     
 					var reg = new RegExp(/url\((.*?)\)/g);
 	                var matched = [];
 					while ((matched = reg.exec(cssText)) !== null) {
                         var ext = matched[1].replace(/\"/g, '');
-                        var href = styleSheets[i].href || location.href;
+                        var href = currentStyle.href || location.href;
                         cssIRIs.push([ext, href]);
                         var a = tester.URL(ext, href);
-                        var iri = a.href.substring(a.href.lastIndexOf('/') + 1);
+                        var iri = (href===location.href && ext.indexOf('.svg')<0)? a.hash : a.href.substring(a.href.lastIndexOf('/') + 1);
                         var newId = '#' + iri.replace(/\//g, '_').replace(/\./g, '_').replace('#', '_');
                         cssText = cssText.replace(ext, newId);
 					}
@@ -923,7 +923,7 @@ function SVG2Bitmap(svg, receiver, params) {
                 // already in the list
                 if (docI.href === href) {
                     // not an external doc
-                    if (i === 0) {
+                    if (i === 0) {	
                         if (clone.getElementById(hash)) {
                             return hash;
                         } else {
