@@ -136,6 +136,23 @@ function SVG2Bitmap(svg, receiver, params) {
         if (svg.height.baseVal.unitType !== 1) {
             clone.setAttribute('height', bbox.height);
         }
+		// IE's XMLSerializer mess around with non-default namespaces, 
+		// no way to catch it ; we make the removal default then...
+		var cleanNS = function(el) {
+			var attr = Array.prototype.slice.call(el.attributes);
+			for (var i = 0; i < attr.length; i++) {
+				var name = attr[i].name;
+				if (name.indexOf(':') > -1 && name.indexOf('xlink') < 0){
+					el.removeAttribute(name);
+				}
+			}   
+        };
+        cleanNS(clone);
+		var children = clone.querySelectorAll('*');
+		for (var i = 0; i < children.length; i++) {
+			cleanNS(children[i]);
+		}
+
 
         // serialize our node
         var svgData = (new XMLSerializer()).serializeToString(clone);
@@ -167,18 +184,14 @@ function SVG2Bitmap(svg, receiver, params) {
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
             var s = params.scale;
-            var innerRect;
-            if (frame) {
-                innerRect = svg.getBoundingClientRect();
-            } else {
-                innerRect = {
-                    top: 0,
-                    left: 0
-                };
-            }
-
-            ctx.drawImage(svgImg, innerRect.left, innerRect.top, this.width * s || canvas.width, this.height * s || canvas.height);
-
+            var innerRect = frame ? svg.getBoundingClientRect() : {top: 0,left: 0};
+            
+            // strange bug in IE11 where it seems the image isn't loaded the first time...
+			try{
+	            ctx.drawImage(this, innerRect.left, innerRect.top, this.width * s || canvas.width, this.height * s || canvas.height);
+			}catch(e){
+				setTimeout(load_handler.bind(this), 200);
+			}
             // a default function to replace the svg element with the bitmap version
             if (!receiver) {
                 receiver = function(c) {
@@ -225,34 +238,17 @@ function SVG2Bitmap(svg, receiver, params) {
         };
 
         var error_handler = function(e) {
-            if (cleanedNS) {
-                console.error("Couldn't export svg, please check that the svgElement passed is a valid svg document.");
-                return;
-            }
-
-            var cleanNS = function(el) {
-                var attr = el.attributes;
-                for (var i = 0; i < attr.length; i++) {
-                    if (attr[i].name.indexOf(':') > -1 && attr[i].name.indexOf('xlink') !== 0)
-                        el.removeAttribute(attr[i].name);
-                }
-            };
-            cleanNS(svg);
-            for (var i = 0; i < clone.children.length; i++) {
-                cleanNS(clone.children[i]);
-            }
-            cleanedNS = true;
-            // retry the export
-            exportDoc();
+			console.error("Couldn't export svg, please check that the svgElement passed is a valid svg document.");
+			return;
         };
 
-        svgImg.onload = load_handler;
+		svgImg.onload = load_handler;
         svgImg.onerror = error_handler;
+
         svgImg.src = svgURL;
 
     };
     // get all the rules applied to our svg elements 
-
     var parseStyles = function() {
         var cssIRIs = [],
             styleSheets = [];
