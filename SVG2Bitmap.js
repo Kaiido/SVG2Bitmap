@@ -136,26 +136,31 @@ function SVG2Bitmap(svg, receiver, params) {
         if (svg.height.baseVal.unitType !== 1) {
             clone.setAttribute('height', bbox.height);
         }
-		// IE's XMLSerializer mess around with non-default namespaces, 
-		// no way to catch it ; we make the removal default then...
-		var cleanNS = function(el) {
-			var attr = Array.prototype.slice.call(el.attributes);
-			for (var i = 0; i < attr.length; i++) {
-				var name = attr[i].name;
-				if (name.indexOf(':') > -1 && name.indexOf('xlink') < 0){
-					el.removeAttribute(name);
-				}
-			}   
-        };
-        cleanNS(clone);
-		var children = clone.querySelectorAll('*');
-		for (var i = 0; i < children.length; i++) {
-			cleanNS(children[i]);
-		}
-
 
         // serialize our node
-        var svgData = (new XMLSerializer()).serializeToString(clone);
+        var svgData;
+        // detect IE, that's dirty...
+        if(typeof ActiveXObject !== 'undefined'){
+        	// IE's XMLSerializer mess around with non-default namespaces, 
+			// no way to catch it ; we make the removal default then...
+			var cleanNS = function(el) {
+				var attr = Array.prototype.slice.call(el.attributes);
+
+				for (var i = 0; i < attr.length; i++) {
+					var name = attr[i].name;
+					if (name.indexOf(':') > -1 && name.indexOf('xlink') < 0){
+						el.removeAttribute(name);
+					}
+				}   
+			};
+			cleanNS(clone);
+			var children = clone.querySelectorAll('*');
+			for (var i = 0; i < children.length; i++) {
+				cleanNS(children[i]);
+			}
+        }
+        
+        svgData = (new XMLSerializer()).serializeToString(clone);
 
         var svgURL = 'data:image/svg+xml; charset=utf8, ' + encodeURIComponent(svgData);
 
