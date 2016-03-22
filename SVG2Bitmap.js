@@ -284,12 +284,17 @@ function SVG2Bitmap(svg, receiver, params) {
             // create a new style element
             var style = document.createElement('style');
             // some stylesheets can't be accessed and will throw a security error
-
-            var l = rules.length;
+            var l = rules && rules.length;
             // iterate through each cssRules of this stylesheet
             for (var j = 0; j < l; j++) {
                 // get the selector of this cssRules
                 var selector = rules[j].selectorText;
+                // probably an external stylesheet we can't access
+                if(!selector){
+                	continue;
+                	}
+                
+                console.log(selector);
                 // is it our svg node or one of its children ?
                 if ((svg.matches && svg.matches(selector)) || svg.querySelector(selector)) {
 
