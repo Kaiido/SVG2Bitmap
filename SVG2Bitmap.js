@@ -160,6 +160,10 @@ function SVG2Bitmap(svg, receiver, params) {
 			}
         }
         
+        // we don't need the style attribute of the clone since we'll use the one from the original node
+        // Thus, it can create bad things with absolutely positioned elements.
+        clone.removeAttribute('style');
+        
         svgData = (new XMLSerializer()).serializeToString(clone);
 
         var svgURL = 'data:image/svg+xml; charset=utf8, ' + encodeURIComponent(svgData);
