@@ -294,7 +294,6 @@ function SVG2Bitmap(svg, receiver, params) {
                 	continue;
                 	}
                 
-                console.log(selector);
                 // is it our svg node or one of its children ?
                 if ((svg.matches && svg.matches(selector)) || svg.querySelector(selector)) {
 
