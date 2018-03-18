@@ -1,7 +1,21 @@
+
 SVG2Bitmap
 ===========
 
 #### JavaScript SVG to Canvas utility ####
+
+## This project is now dead. ##  
+
+We are sorry, but we don't have time to maintain it, and it started on the wrong path anyway.  
+It should have kept itself to only parsing and fetching external assets, instead of trying to do everything from A to Z.
+
+You can still use it, fork it, tweak it freely, but we won't work on it anymore.
+
+Maybe some day it's little sister SVGUnify will finally come to life.
+
+_____
+
+## Old readme ##
 
 
 The script fixes some issues while drawing SVG on a HTMLcanvas with the built-in [`context.drawImage()`](https://developer.mozilla.org/en/docs/Web/API/CanvasRenderingContext2D/drawImage) method.
@@ -63,6 +77,4 @@ A custom property of the returned canvas named `originalSVG` will keep a link to
 
 ### More examples ###
 
-Will come soon
-
-	
+Will never come...
